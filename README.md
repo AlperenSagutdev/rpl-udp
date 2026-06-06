@@ -1,34 +1,9 @@
-# rpl-udp
+# BİL 304 - İşletim Sistemleri Final Projesi
 
-A simple RPL network with UDP communication. This is a self-contained example:
-it includes a DAG root (`udp-server.c`) and DAG nodes (`udp-clients.c`).
-This example runs without a border router -- this is a stand-alone RPL network.
+## 1. Gerçeklenen Yöntemler
 
-The DAG root also acts as UDP server. The DAG nodes are UDP client. The clients
-send a UDP request periodically, that simply includes a counter as payload.
-When receiving a request, The server sends a response with the same counter
-back to the originator.
-
-The `.csc` files show example networks in the Cooja simulator, for sky motes and
-for cooja motes.
-
-For this example a "renode" make target is available, to run a 3 node
-emulation in the Renode framework. For further instructions on installing and
-using Renode please refer to [the documentation][1].
-
-[1]: https://docs.contiki-ng.org/en/develop/doc/tutorials/Running-Contiki-NG-in-Renode.html
-
-The rpl-udp.robot is a Robot framework test for renode. To run that do:
-
-    >make TARGET=cc2538dk
-    >renode-test rpl-udp.robot
-
-# İşletim Sistemleri Projesi
-
-## 1. Gerçeklenen Yöntemler (Implemented Methods)
-
-### Dur-ve-Bekle (Stop-and-Wait) ARQ Protokolü
-İstemci ve sunucu arasındaki dosya aktarımı, güvenilir bir iletişim sağlamak amacıyla **Dur-ve-Bekle ARQ** mantığıyla tasarlanmıştır. İstemci bir bloğu gönderir ve bir sonraki bloğa geçmeden önce sunucudan o bloğa ait `ACK` (Onay) paketini bekler. Zaman aşımı durumunda paketi tekrar iletir.
+### Dur-ve-Bekle ARQ Protokolü
+İstemci ve sunucu arasındaki dosya aktarımı, güvenilir bir iletişim sağlamak amacıyla **Dur-ve-Bekle ARQ** protokolü kullanılarak gerçeklenmiştir. İstemci bir bloğu gönderir ve bir sonraki bloğa geçmeden önce sunucudan o bloğa ait `ACK` (Onay) paketini bekler. Zaman aşımı durumunda paketi tekrar iletir.
 
 ```c
 // Client: Beklenen ACK gelene kadar aynı paketin belirli aralıklarla tekrar gönderimi
@@ -43,7 +18,7 @@ while (expected_ack == target_ack) {
 ```
 
 ### Dosya Sistemi Entegrasyonu (CFS)
-İşletim sisteminin sanal disk yönetimi, Contiki Dosya Sistemi (CFS) kullanılarak gerçeklenmiştir. İstemci cihaz diskte `new-firmware.z1` isimli dosyayı okuyup bloklara bölerken, sunucu cihaz ağ üzerinden aldığı bu doğrulanmış blokları `received.elf` adıyla belleğe yazar.
+İşletim sisteminin sanal disk yönetimi, Contiki Dosya Sistemi (CFS) kullanılarak gerçeklenmiştir. İstemci cihaz diskte `new-firmware.z1` isimli dosyayı okuyup bloklara bölerken, sunucu cihaz ağ üzerinden aldığı bu doğrulanmış blokları `received.elf` adıyla diske yazar. Coffe File System üzerinde dosya bulunamadığı takdirde ayarlanan boyuta göre rastgele veriler içeren bir dosya oluşturulur. Dosya aktarımı Cooja simülasyon ortamında gerçeklendiğinden, kullanılan Z1 Mote'una ait sanal diske kolay bir şekilde veri aktarma API'ları açılmadığı için bu yöntem seçilmiştir. Client'ın ağ üzerinden dosya alımı gerçekleştirmesi gibi yöntemler düşünülse de, ödev istenirlerinden kopmamak amacıyla bu branch için rastgele yöntem seçilmiştir. 
 
 ```c
 // Client: İlgili bloğa konumlanma ve veriyi okuma
@@ -118,6 +93,9 @@ Dur-ve-bekle protokolünde aynı paket ağ gecikmesi nedeniyle birden fazla kez 
 * **Beklenen Blok Gelirse:** Kabul edilir ve disk yazılır.
 * **Eski Blok Gelirse (Kopya):** İstemcinin ACK'yi kaçırdığı varsayılır, blok tekrar diske yazılmaz ama ACK tekrar gönderilir.
 * **İlerideki Blok Gelirse:** Doğrudan reddedilir.
+
+### D. Node Erişilebilirlik Kontrolü
+Transfer esnasında node'lar arası erişilebilirlik kontrolü yapılır. Eğer node'lar arası erişilebilirlik sağlanamazsa bu bilgi info mesajı olarak gönderilir. Menzile yeniden girildiğinde transfer kaldığı yerden devam eder.
 
 ```c
 // Server: Akış ve sıra kontrol mekanizması
