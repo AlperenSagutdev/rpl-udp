@@ -94,9 +94,6 @@ Dur-ve-bekle protokolünde aynı paket ağ gecikmesi nedeniyle birden fazla kez 
 * **Eski Blok Gelirse (Kopya):** İstemcinin ACK'yi kaçırdığı varsayılır, blok tekrar diske yazılmaz ama ACK tekrar gönderilir.
 * **İlerideki Blok Gelirse:** Doğrudan reddedilir.
 
-### D. Node Erişilebilirlik Kontrolü
-Transfer esnasında node'lar arası erişilebilirlik kontrolü yapılır. Eğer node'lar arası erişilebilirlik sağlanamazsa bu bilgi info mesajı olarak gönderilir. Menzile yeniden girildiğinde transfer kaldığı yerden devam eder.
-
 ```c
 // Server: Akış ve sıra kontrol mekanizması
 if (pkt->block_num == next_expected_block) {
@@ -109,8 +106,14 @@ if (pkt->block_num == next_expected_block) {
   return; // Hatalı paket akışını kes
 }
 ```
+### D. Node Erişilebilirlik Kontrolü
+Transfer esnasında node'lar arası erişilebilirlik kontrolü yapılır. Eğer node'lar arası erişilebilirlik sağlanamazsa bu bilgi info mesajı olarak gönderilir. Menzile yeniden girildiğinde transfer kaldığı yerden devam eder.
 
-### D. İletişim Güvenliği ve Düğüm Doğrulama
+```c
+if (NETSTACK_ROUTING.node_is_reachable() &&
+              NETSTACK_ROUTING.get_root_ipaddr(&dest_ipaddr))
+```
+### E. İletişim Güvenliği ve Düğüm Doğrulama
 İletişime istenmeyen düğümlerin dahil olup sahte paket göndermesini engellemek için, istemci cihaz sadece beklediği kök cihazdan (RPL root veya IP adresinin sonu `1` olan düğümden) gelen mesajları dikkate alır.
 
 ```c
