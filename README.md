@@ -1,5 +1,15 @@
 # BİL 304 - İşletim Sistemleri Final Projesi
 
+Bu Projede, Contiki-NG işletim sistemi üzerinde UDP protokolü kullanılarak güvenilir bir firmware güncelleme (Over-the-Air / OTA) altyapısının istemci ve sunucu taraflı tasarımı gerçekleştirilmiştir. Proje kapsamında Dur-ve-Bekle (Stop-and-Wait) ARQ protokolü, Contiki Dosya Sistemi (CFS) entegrasyonu ve paket/dosya seviyesinde güvenlik önlemleri tasarlanmıştır. Gerçeklenen kod yapıları yalnızca koda dökülmekle kalmamış; aynı zamanda ağ üzerindeki paket kayıplarına, veri bozulmalarına ve yetkisiz düğüm erişimlerine karşı sistemin nasıl direnç gösterdiği teorik olarak açıklanmıştır.
+
+|Öğrenci |Numara
+|------------------ | ------------------------------------
+|**Alperen Sağut**    |22060337
+|**Can Pusat Dinçer** |23060503
+
+Projenin Anlatımına Dair Video Linki : https://www.youtube.com/watch?v=2F3TKMRX3Zk
+
+
 ## 1. Gerçeklenen Yöntemler
 
 ### Dur-ve-Bekle ARQ Protokolü
