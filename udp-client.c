@@ -166,10 +166,18 @@ PROCESS_THREAD(udp_client_process, ev, data)
 
         while (expected_ack == target_ack)
         {
-          LOG_INFO("Blok %u gonderiliyor (%d bayt)...\n", current_pkt.block_num, current_pkt.data_len);
-          simple_udp_sendto(&udp_conn, &current_pkt, sizeof(struct firmware_packet), &dest_ipaddr);
-
-          etimer_set(&timeout_timer, CLOCK_SECOND * 1);
+          if (NETSTACK_ROUTING.node_is_reachable() &&
+              NETSTACK_ROUTING.get_root_ipaddr(&dest_ipaddr))
+          {
+            LOG_INFO("Blok %u gonderiliyor (%d bayt)...\n", current_pkt.block_num, current_pkt.data_len);
+            simple_udp_sendto(&udp_conn, &current_pkt, sizeof(struct firmware_packet), &dest_ipaddr);
+            etimer_set(&timeout_timer, CLOCK_SECOND * 1);
+          }
+          else
+          {
+            LOG_INFO("Root erisilemez, blok %u icin RPL yakinsamasi bekleniyor...\n", current_pkt.block_num);
+            etimer_set(&timeout_timer, CLOCK_SECOND * 2);
+          }
           PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&timeout_timer) || ev == PROCESS_EVENT_POLL);
         }
       }
@@ -197,11 +205,16 @@ PROCESS_THREAD(udp_client_process, ev, data)
         LOG_INFO("Tum imaj SHA-256 ozeti gonderiliyor (deneme %u/%u)...\n",
                  hash_retries + 1, MAX_HASH_RETRIES);
         simple_udp_sendto(&udp_conn, &hpkt, sizeof(hpkt), &dest_ipaddr);
+        etimer_set(&timeout_timer, CLOCK_SECOND * 2);
+        hash_retries++;
       }
-      etimer_set(&timeout_timer, CLOCK_SECOND * 2);
+      else
+      {
+        LOG_INFO("Hash gonderimi icin root bekleniyor...\n");
+        etimer_set(&timeout_timer, CLOCK_SECOND * 2);
+      }
       PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&timeout_timer) ||
                                ev == PROCESS_EVENT_POLL);
-      hash_retries++;
     }
 
     if (hash_ack_received)

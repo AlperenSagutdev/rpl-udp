@@ -1,0 +1,39 @@
+TIMEOUT(100000);
+
+// 1. Fetch target Z1 Mote
+var targetMote = sim.getMoteWithID(1);
+
+// 2. Drop down to the MSPSim emulation layer directly
+var cpuMote = targetMote.getCPU(); 
+var chip = cpuMote.getChip("M25P80"); // Targets the misnamed flash profile in MSPSim
+
+if (chip != null) {
+    log.log("Found MSPSim Flash Emulation Chip: " + chip.getID() + "\n");
+    
+    // Read your host binary file into a byte array
+    var javaFile = new java.io.File("payload.bin"); 
+    if (!javaFile.exists()) {
+        log.log("Error: payload.bin not found on host path!\n");
+    } else {
+        var fileLength = javaFile.length();
+        var fileBytes = java.nio.file.Files.readAllBytes(javaFile.toPath());
+        
+        // 3. Manually push bytes directly into the emulated flash memory layout
+        // Note: Coffee FS typical storage offset on Z1/Sky starts at 1024 * 1024 or 0 depending on your project config
+        var startOffset = 0x000000; 
+        
+        for (var i = 0; i < fileLength; i++) {
+            chip.writeMemory(startOffset + i, fileBytes[i]);
+        }
+        log.log("Successfully injected " + fileLength + " bytes directly into M25P80 emulator memory layout!\n");
+    }
+} else {
+    log.log("Could not find emulated flash chip instance. Trying alternative lookup...\n");
+    // Fallback if your specific MSPSim fork registers it under standard class types
+    var flashInterface = targetMote.getInterfaces().getLog(); 
+    log.log("Available interfaces: " + targetMote.getInterfaces().getInterfaces().toString() + "\n");
+}
+
+while (true) {
+    YIELD();
+}

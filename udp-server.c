@@ -123,7 +123,7 @@ udp_rx_callback(struct simple_udp_connection *c,
     }
     else if (pkt->block_num < next_expected_block)
     {
-      LOG_INFO("Eski/Mükerrer blok %u alindi, tekrar ACK yollaniyor.\n", pkt->block_num);
+      LOG_INFO("Eski blok %u alindi, tekrar ACK yollaniyor.\n", pkt->block_num);
     }
     else
     {
